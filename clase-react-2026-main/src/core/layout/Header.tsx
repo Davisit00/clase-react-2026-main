@@ -1,8 +1,9 @@
 import { Clapperboard, Heart } from 'lucide-react'
+import { NavLink } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
-export type Vista = 'catalogo' | 'favoritas'
+export type Vista = 'catalogo' | 'estrenos' | 'favoritas'
 
 interface Props {
   vista: Vista
@@ -27,13 +28,18 @@ export function Header({ vista, totalFavoritas, onCambiarVista }: Props) {
 
         <nav className="ml-auto flex items-center gap-1">
           {/* La variante del botón depende de qué vista está activa */}
-          <Button variant={vista === 'catalogo' ? 'secondary' : 'ghost'} onClick={() => onCambiarVista('catalogo')}>
-            Películas
+          <Button asChild variant={vista === 'catalogo' ? 'secondary' : 'ghost'}>
+            <NavLink to="/peliculas">Películas</NavLink>
           </Button>
-          <Button variant={vista === 'favoritas' ? 'secondary' : 'ghost'} onClick={() => onCambiarVista('favoritas')}>
-            <Heart className="fill-primary text-primary" />
-            Favoritas
-            {totalFavoritas > 0 && <Badge className="ml-1 h-5 min-w-5 px-1.5 tabular-nums">{totalFavoritas}</Badge>}
+          <Button asChild variant={vista === 'estrenos' ? 'secondary' : 'ghost'}>
+            <NavLink to="/estrenos">Estrenos</NavLink>
+          </Button>
+          <Button asChild variant={vista === 'favoritas' ? 'secondary' : 'ghost'}>
+            <NavLink to="/favoritas">
+              <Heart className="fill-primary text-primary" />
+              Favoritas
+              {totalFavoritas > 0 && <Badge className="ml-1 h-5 min-w-5 px-1.5 tabular-nums">{totalFavoritas}</Badge>}
+            </NavLink>
           </Button>
         </nav>
       </div>
