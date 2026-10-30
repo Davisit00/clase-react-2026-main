@@ -1,34 +1,43 @@
-import { useCallback } from 'react'
-import { useParams } from 'react-router'
-import { imagen } from '@/core/config/tmdb'
-import { EsqueletoGrilla } from '@/shared/components/EsqueletoGrilla'
+import { ArrowLeft } from 'lucide-react'
+import { Link, useParams } from 'react-router'
+import { Button } from '@/components/ui/button'
+import { useFavoritas } from '@/core/favoritas/favoritas-context'
 import { MensajeError } from '@/shared/components/MensajeError'
-import { useConsulta } from '@/shared/hooks/useConsulta'
-import { obtenerDetalle } from '../services/peliculas.service'
+import { EsqueletoFicha, FichaPelicula } from '../components/FichaPelicula'
+import { GrillaPeliculas } from '../components/GrillaPeliculas'
+import { usePelicula } from '../hooks/usePeliculas'
+import { anio } from '../models/pelicula'
 
+// M8 · Una página con su propia URL: /peliculas/603
 export function DetallePelicula() {
+  // useParams lee los segmentos dinámicos de la ruta (:id). Siempre llegan como string.
   const { id } = useParams()
-  const peliculaId = Number(id)
-  const consultar = useCallback(
-    (signal: AbortSignal) => obtenerDetalle(peliculaId, signal),
-    [peliculaId],
-  )
-  const consulta = useConsulta(`detalle|${peliculaId}`, consultar)
+  const { datos: peli, error, reintentar } = usePelicula(Number(id))
+  const { esFavorita, alternar } = useFavoritas()
 
-  if (consulta.cargando) return <EsqueletoGrilla cantidad={1} />
-  if (consulta.error) return <MensajeError mensaje={consulta.error.message} onReintentar={consulta.reintentar} />
-  if (!consulta.datos) return null
+  // Retornos tempranos: primero el error, luego la carga, al final la película
+  if (error) return <MensajeError mensaje={error} onReintentar={reintentar} />
+  if (!peli) return <EsqueletoFicha />
 
   return (
-    <article className="grid gap-8 md:grid-cols-[18rem_1fr]">
-      <title>{consulta.datos.title} · Cartelera</title>
-      {imagen(consulta.datos.poster_path) ? (
-        <img src={imagen(consulta.datos.poster_path, 'w500') ?? undefined} alt={`Póster de ${consulta.datos.title}`} className="w-full rounded-xl" />
-      ) : null}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{consulta.datos.title}</h1>
-        <p className="mt-4 text-muted-foreground">{consulta.datos.overview || 'Esta película no tiene sinopsis disponible.'}</p>
-      </div>
+    <article>
+      <title>{`${peli.title} (${anio(peli.release_date)}) · Cartelera`}</title>
+
+      <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2 text-muted-foreground">
+        <Link to="/peliculas">
+          <ArrowLeft /> Catálogo
+        </Link>
+      </Button>
+
+      <FichaPelicula pelicula={peli} favorita={esFavorita(peli.id)} onFavorito={() => alternar(peli)} />
+
+      {peli.similar.results.length > 0 && (
+        <section className="mt-12">
+          <h2 className="mb-4 text-xl font-bold">Si te gustó, mira también</h2>
+          {/* Cada tarjeta es un Link a otra película: cambia el :id y usePelicula vuelve a pedir */}
+          <GrillaPeliculas peliculas={peli.similar.results.slice(0, 5)} />
+        </section>
+      )}
     </article>
   )
 }
