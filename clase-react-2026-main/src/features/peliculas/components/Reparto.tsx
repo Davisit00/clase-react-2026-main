@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { imagen } from '@/core/config/tmdb'
+import { Link } from 'react-router'
 import type { Credito } from '../models/pelicula'
 
 function iniciales(nombre: string) {
@@ -19,15 +20,17 @@ export function Reparto({ actores }: { actores: Credito[] }) {
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {actores.map((a) => (
           <li key={a.id} className="flex items-center gap-3">
-            <Avatar className="size-10">
-              <AvatarImage src={imagen(a.profile_path, 'w185') ?? undefined} alt={a.name} className="object-cover" />
-              {/* Si la foto no existe o no carga, shadcn muestra el fallback */}
-              <AvatarFallback>{iniciales(a.name)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 text-sm leading-tight">
-              <p className="truncate font-medium">{a.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{a.character}</p>
-            </div>
+            <Link to={`/personas/${a.id}`} className="flex min-w-0 items-center gap-3 hover:text-primary">
+              <Avatar className="size-10">
+                <AvatarImage src={imagen(a.profile_path, 'w185') ?? undefined} alt={a.name} className="object-cover" />
+                {/* Si la foto no existe o no carga, shadcn muestra el fallback */}
+                <AvatarFallback>{iniciales(a.name)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 text-sm leading-tight">
+                <p className="truncate font-medium">{a.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{a.character}</p>
+              </div>
+            </Link>
           </li>
         ))}
       </ul>
